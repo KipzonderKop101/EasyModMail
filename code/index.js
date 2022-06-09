@@ -21,7 +21,7 @@ for (const file of commandFiles) {
 
 // show us the bot is online and ready to use
 client.once('ready', () => {
-    console.log('Application ready to use');
+    console.log('Application logged in');
 });
 
 // running commands
