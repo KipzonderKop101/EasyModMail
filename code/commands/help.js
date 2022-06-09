@@ -12,7 +12,7 @@ module.exports = {
                 .addChoice('Thread', 'help_thread')
                 .addChoice('Reply', 'help_reply')
                 .addChoice('User', 'help_user')),
-	async execute(interaction) {
+	async execute(interaction, client) {
 		const generalHelpEmbed = new MessageEmbed()
             .setAuthor({ name: 'EasyModMail', url: 'https://github.com/KipzonderKop101/EasyModMail'})
             .addFields(
@@ -73,7 +73,7 @@ module.exports = {
                             }, 
                             {
                                 label: 'Reply',
-                                description: 'The different way to reply to a threat',
+                                description: 'The different ways to reply to a threat',
                                 value: 'select_reply',
                             },
                             {
@@ -83,7 +83,22 @@ module.exports = {
                             },
                         ]),
                 );
-            await interaction.reply({ embeds: [generalHelpEmbed], components: [row] });
+            const message = await interaction.reply({ embeds: [generalHelpEmbed], components: [row] });
+
+            client.on("interactionCreate", async click => {
+                if (
+                  click.user.id !== interaction.user.id || click.guildId !== interaction.guildId || !click.isSelectMenu()) return;
+
+                if (click.customId === 'helpMenu') {
+                    if (click.values[0]) {
+                        await interaction.editReply({ embeds: [threadHelpEmbed], components: [] });
+                    } else if (click.values[1]) {
+                        await interaction.editReply({ embeds: [replyHelpEmbed], components: [] });
+                    } else if (click.values[2]) {
+                        await interaction.editReply({ embeds: [userHelpEmbed], components: [] });  
+                    }
+                  }
+              });
         }
 	},
 };
