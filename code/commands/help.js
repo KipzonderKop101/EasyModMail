@@ -9,9 +9,11 @@ module.exports = {
             option.setName('selection')
                 .setDescription('Select a help category')
                 .setRequired(false)
-                .addChoice('Thread', 'help_thread')
-                .addChoice('Reply', 'help_reply')
-                .addChoice('User', 'help_user')),
+                .addChoices(
+                    { name: 'Thread', value: 'help_thread' },
+                    { name: 'Reply', value: 'help_reply' },
+                    { name: 'User', value: 'help_user' },
+                )),
 	async execute(interaction, client) {
 		const generalHelpEmbed = new MessageEmbed()
             .setAuthor({ name: 'EasyModMail', url: 'https://github.com/KipzonderKop101/EasyModMail'})
