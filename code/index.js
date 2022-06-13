@@ -1,10 +1,10 @@
 const fs = require('node:fs');
 const path = require('node:path');
-const { Client, Collection, Intents } = require('discord.js');
+const { Client, Collection, Intents, MessageEmbed } = require('discord.js');
 const { token} = require('./config.json');
 
 // define new client
-const client = new Client({ intents: [Intents.FLAGS.GUILDS] });
+const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.DIRECT_MESSAGES], partials: ['CHANNEL'] });
 
 // getting commands from their files in './commands'
 client.commands = new Collection();
@@ -37,6 +37,18 @@ client.on('interactionCreate', async interaction => {
     } catch (error) {
         console.error(error);
         await interaction.reply({ content: 'Hmm, we appear to have run into an error. Please try again in a few minutes, if this error persists, please let us know!', ephemeral: true });
+    }
+});
+
+client.on('messageCreate', async (message, guild) =>  {
+    if (message.author.bot) return;
+
+    try {
+        if (message.guild === null) {
+            await message.author.send(message.content);
+        }
+    } catch (error) {
+        console.error(error);
     }
 });
 
