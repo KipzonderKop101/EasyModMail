@@ -22,34 +22,37 @@ for (const file of commandFiles) {
 // show us the bot is online and ready to use
 client.once('ready', () => {
     console.log('Application logged in');
-});
 
-// running commands
-client.on('interactionCreate', async interaction => {
-    if (!interaction.isCommand()) return;
+    let channel = client.channels.cache.get('your-id-here');
 
-    const command = client.commands.get(interaction.commandName);
-
-    if (!command) return;
-
-    try {
-        await command.execute(interaction, client);
-    } catch (error) {
-        console.error(error);
-        await interaction.reply({ content: 'Hmm, we appear to have run into an error. Please try again in a few minutes, if this error persists, please let us know!', ephemeral: true });
-    }
-});
-
-client.on('messageCreate', async (message, guild) =>  {
-    if (message.author.bot) return;
-
-    try {
-        if (message.guild === null) {
-            await message.author.send(message.content);
+    client.on('messageCreate', async (message) =>  {
+        if (message.author.bot) return;
+     
+        try {
+            if (message.guild === null) {
+                await channel.send(`Message from ${message.author.tag}: ${message.content}`);
+            }
+        } catch (error) {
+            await message.channel.send('Hmm, weird, it appears we ran into an error. Please try again in a few minutes. If this error persits, please let us')
+            console.error(error);
         }
-    } catch (error) {
-        console.error(error);
-    }
+    });
+
+    // running commands
+    client.on('interactionCreate', async interaction => {
+        if (!interaction.isCommand()) return;
+
+        const command = client.commands.get(interaction.commandName);
+
+        if (!command) return;
+
+        try {
+            await command.execute(interaction, client);
+        } catch (error) {
+            console.error(error);
+            await interaction.reply({ content: 'Hmm, we appear to have run into an error. Please try again in a few minutes, if this error persists, please let us know!', ephemeral: true });
+        }
+    });
 });
 
 client.login(token);
