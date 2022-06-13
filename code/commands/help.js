@@ -71,7 +71,7 @@ module.exports = {
                             {
                                 label: 'Thread',
                                 description: 'Useful commands for your threads',
-                                value: 'select_threat',
+                                value: 'select_thread',
                             }, 
                             {
                                 label: 'Reply',
@@ -85,18 +85,18 @@ module.exports = {
                             },
                         ]),
                 );
-            const message = await interaction.reply({ embeds: [generalHelpEmbed], components: [row] });
+            await interaction.reply({ embeds: [generalHelpEmbed], components: [row] });
 
             client.on("interactionCreate", async click => {
                 if (
                   click.user.id !== interaction.user.id || click.guildId !== interaction.guildId || !click.isSelectMenu()) return;
 
                 if (click.customId === 'helpMenu') {
-                    if (click.values[0]) {
+                    if (click.values[0] === 'select_thread') {
                         await interaction.editReply({ embeds: [threadHelpEmbed], components: [] });
-                    } else if (click.values[1]) {
+                    } else if (click.values[0] === 'select_reply') {
                         await interaction.editReply({ embeds: [replyHelpEmbed], components: [] });
-                    } else if (click.values[2]) {
+                    } else if (click.values[0] === 'select_user') {
                         await interaction.editReply({ embeds: [userHelpEmbed], components: [] });  
                     }
                   }
