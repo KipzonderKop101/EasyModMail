@@ -1,58 +1,106 @@
-const fs = require('node:fs');
-const path = require('node:path');
-const { Client, Collection, Intents, MessageEmbed } = require('discord.js');
-const { token} = require('./config.json');
+const { SlashCommandBuilder } = require('@discordjs/builders');
+const { MessageEmbed, MessageActionRow, MessageSelectMenu } = require('discord.js');
 
-// define new client
-const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.DIRECT_MESSAGES], partials: ['CHANNEL'] });
+module.exports = {
+	data: new SlashCommandBuilder()
+		.setName('help')
+		.setDescription('See what you can do with this bot')
+        .addStringOption(option =>
+            option.setName('selection')
+                .setDescription('Select a help category')
+                .setRequired(false)
+                .addChoices(
+                    { name: 'Thread', value: 'help_thread' },
+                    { name: 'Reply', value: 'help_reply' },
+                    { name: 'User', value: 'help_user' },
+                )),
+	async execute(interaction, client) {
+		const generalHelpEmbed = new MessageEmbed()
+            .setAuthor({ name: 'EasyModMail', url: 'https://github.com/KipzonderKop101/EasyModMail'})
+            .addFields(
+                { name: 'Thread', value: '`/help thread`', inline: true },
+                { name: 'Replying', value: '`/help reply`', inline: true },
+                { name: 'User', value: '`/help user`', inline: true },
+            )
+        
+        const threadHelpEmbed = new MessageEmbed()
+            .setTitle('Thread')
+            .setDescription('Useful commands for your threads')
+            .addFields(
+                { name: '`/delete [thread] (optional reason)`', value: 'Delete a thread', inline: false },
+                { name: '`/block [thread] (optional reason)`', value: 'Block a user from contacting mod-mail again', inline: false },
+                { name: '`/archive [thread] (optional reason)`', value: 'Archive a thread', inline: false },
+                { name: '`/transfer [thread] (optional reason)`', value: 'Transfer the thread to a different category', inline: false },
+                { name: '`/permissions [thread] [role] (optional reason)`', value: 'Change the permissions of a thread', inline: false},
+                { name: '`/close [thread] (optional message) (optional reason)`', value: 'Close a thread', inline: false}
+            )
+        
+        const replyHelpEmbed = new MessageEmbed()
+            .setTitle('Reply')
+            .setDescription('The different ways to reply to a threat')
+            .addFields(
+                { name: '`/reply [thread] [message]`', value: 'Reply to a thread', inline: false },
+                { name: '`/areply [thread] [message]`', value: 'Reply to a thread anonymously', inline: false },
+                { name: '`/snippets [thread] [snippet]`', value: 'Transfer the thread to a different category', inline: false },
+            )
 
-// getting commands from their files in './commands'
-client.commands = new Collection();
-
-const commandsPath = path.join(__dirname, 'commands');
-const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
-
-for (const file of commandFiles) {
-    const filePath = path.join(commandsPath, file);
-    const command = require(filePath);
+        const userHelpEmbed = new MessageEmbed()
+            .setTitle('User')
+            .setDescription('Different actions you can perform regarding the threat opener, the user')
+            .addFields(
+                { name: '`/info [thread]`', value: 'Info on the user that started the thread', inline: false },
+                { name: '`/kick [thread] (optional reason)`', value: 'Kick the user that started the thread', inline: false },
+                { name: '`/ban [thread] (optional reason)`', value: 'Ban the user that started the thread', inline: false },
+            )
     
-    client.commands.set(command.data.name, command);
-}
+        const selection = interaction.options.getString('selection');
 
-// show us the bot is online and ready to use
-client.once('ready', () => {
-    console.log('Application logged in');
+        if (selection === 'help_thread') {
+            await interaction.reply({ embeds: [threadHelpEmbed] });
+        } else if (selection === 'help_reply') {
+            await interaction.reply({ embeds: [replyHelpEmbed] });
+        } else if (selection === 'help_user') {
+            await interaction.reply({ embeds: [userHelpEmbed] });
+        } else {
+            const row = new MessageActionRow()
+                .addComponents(
+                    new MessageSelectMenu()
+                        .setCustomId('helpMenu')
+                        .setPlaceholder('Make a selection')
+                        .addOptions([
+                            {
+                                label: 'Thread',
+                                description: 'Useful commands for your threads',
+                                value: 'select_thread',
+                            }, 
+                            {
+                                label: 'Reply',
+                                description: 'The different ways to reply to a threat',
+                                value: 'select_reply',
+                            },
+                            {
+                                label: 'User',
+                                description: 'Different actions you can perform regarding the threat opener, the user',
+                                value: 'select_user'
+                            },
+                        ]),
+                );
+            await interaction.reply({ embeds: [generalHelpEmbed], components: [row] });
 
-    let channel = client.channels.cache.get('your-id-here');
+            client.on("interactionCreate", async click => {
+                if (
+                  click.user.id !== interaction.user.id || click.guildId !== interaction.guildId || !click.isSelectMenu()) return;
 
-    client.on('messageCreate', async (message) =>  {
-        if (message.author.bot) return;
-     
-        try {
-            if (message.guild === null) {
-                await channel.send(`Message from ${message.author.tag}: ${message.content}`);
-            }
-        } catch (error) {
-            await message.channel.send('Hmm, weird, it appears we ran into an error. Please try again in a few minutes. If this error persits, please let us')
-            console.error(error);
+                if (click.customId === 'helpMenu') {
+                    if (click.values[0] === 'select_thread') {
+                        await interaction.editReply({ embeds: [threadHelpEmbed], components: [] });
+                    } else if (click.values[0] === 'select_reply') {
+                        await interaction.editReply({ embeds: [replyHelpEmbed], components: [] });
+                    } else if (click.values[0] === 'select_user') {
+                        await interaction.editReply({ embeds: [userHelpEmbed], components: [] });  
+                    }
+                  }
+              });
         }
-    });
-
-    // running commands
-    client.on('interactionCreate', async interaction => {
-        if (!interaction.isCommand()) return;
-
-        const command = client.commands.get(interaction.commandName);
-
-        if (!command) return;
-
-        try {
-            await command.execute(interaction, client);
-        } catch (error) {
-            console.error(error);
-            await interaction.reply({ content: 'Hmm, we appear to have run into an error. Please try again in a few minutes, if this error persists, please let us know!', ephemeral: true });
-        }
-    });
-});
-
-client.login(token);
+	},
+};
