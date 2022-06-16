@@ -2,6 +2,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { Client, Collection, Intents, MessageEmbed } = require('discord.js');
 const { token } = require('./config.json');
+const { userInfo } = require('node:os');
 
 // define new client
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.DIRECT_MESSAGES, Intents.FLAGS.GUILD_MEMBERS], partials: ['CHANNEL'] });
@@ -39,9 +40,31 @@ client.once('ready', () => {
             if (message.guild === null) {
                 if (channel === undefined) {
                     let thread = await guild.channels.create(user, { type: 'text' });
-                    await thread.send(message.content);
+                    let id = await thread.send(message.author.id);
+                    await id.pin();
+                    await id.reply('It is recommend to not delete or unpin this message. We use it to get the user to respond to, we are currently working on a better way, but for now this is the way.');
+
+                    const userInfoEmbed = new MessageEmbed()
+                        .setTitle('New thread openend')
+                        .setDescription(`**Username:** ${message.author.tag}\n**User id:** ${message.author.id} \n\n **content:**\n \`\`\`${message.content}\`\`\``)
+                        .setTimestamp() 
+
+                    if (message.content.length > 3000) {
+                        await message.author.send(`Hmm, this message is too long! The current allowed character limit is 3000, and you send ${message.content.length}`);
+                    } else {
+                        await thread.send({ embeds: [userInfoEmbed] })
+                    }
                 } else if (channel !== undefined) {
-                    await channel.send(message.content);
+                    if (message.content.length > 3000) {
+                        await message.author.send(`Hmm, this message is too long! The current allowed limit is 3000, and you send ${message.content.length}`);
+                    } else {
+                        const messageEmbed = new MessageEmbed()
+                            .setTitle('DM received')
+                            .setDescription(`**Username:** ${message.author.tag} \n\n **content:**\n \`\`\`${message.content}\`\`\``)
+                            .setTimestamp() 
+                        
+                        await channel.send({ embeds: [messageEmbed] });
+                    }
                 } 
             }
         } catch (error) {
