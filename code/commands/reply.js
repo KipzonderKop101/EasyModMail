@@ -18,21 +18,41 @@ module.exports = {
 				.setRequired(false)),
 	async execute(interaction, client) {
 		let guild = client.guilds.cache.get('850778582515056710');
-		let user = interaction.channel.name.replace('-', '#');
 
-		const this_channel = interaction.options.getBoolean('this');
-		const thread = interaction.options.getChannel('thread');
-        const message = interaction.options.getString('message');
-		
+		let this_channel = interaction.options.getBoolean('this');
+		let thread = interaction.options.getChannel('thread');
+        let message = interaction.options.getString('message');
+
 		if (this_channel) {	
 			if (thread === null) {
-				await interaction.reply(message);
+				let messages = await interaction.channel.messages.fetchPinned();
+				let id = messages.first();
+
+				client.users.fetch(id.content).then(async user => {
+					await user.send(message).catch(async error => {
+						await interaction.reply({ content: 'This user is not receiving DM\'s', ephemeral: true})
+						console.error(error);
+					});
+				}).catch(async error => {
+					await interaction.reply({ content: 'We couldn\'t find the user ID pinned message', ephemeral: true });
+					console.error(error);
+				});
 			} else {
 				await interaction.reply({ content: `You cannot select a channel while having \`this\` selected as \`${this_channel}\``, ephemeral: true });
 			}
 		} else {
-			const thread_message = await thread.send(message);
-            await interaction.reply('Message sent in the requested channel');
+			let messages = await thread.messages.fetchPinned();
+			let id = messages.first();
+
+			client.users.fetch(id.content).then(async user => {
+				await user.send(message).catch(async error => {
+					await interaction.reply({ content: 'This user is not receiving DM\'s', ephemeral: true });
+					console.error(error);
+				});
+			}).catch(async error => {
+				await interaction.reply({ content: 'We couldn\'t find the user ID pinned message', ephemeral: true });
+				console.log(error);
+			});
 		}
 	},
 };
