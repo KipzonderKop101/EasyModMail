@@ -4,7 +4,7 @@ const { Client, Collection, Intents, MessageEmbed } = require('discord.js');
 const { token } = require('./config.json');
 
 // define new client
-const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.DIRECT_MESSAGES], partials: ['CHANNEL'] });
+const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.DIRECT_MESSAGES, Intents.FLAGS.GUILD_MEMBERS], partials: ['CHANNEL'] });
 
 // getting commands from their files in './commands'
 client.commands = new Collection();
@@ -23,13 +23,18 @@ for (const file of commandFiles) {
 client.once('ready', () => {
     console.log('Application logged in');
 
+    // detect messages
     client.on('messageCreate', async (message) =>  {
         if (message.author.bot) return;
+
+        // find the user's channel
 
         let guild = client.guilds.cache.get('850778582515056710');
         let user = message.author.tag.replace('#', '-').toLowerCase();
         let channel = guild.channels.cache.find(channel => channel.name === user);
         
+        // check if there's a channel, than send the message there. If not, create a new channel
+
         try {
             if (message.guild === null) {
                 if (channel === undefined) {
@@ -37,7 +42,7 @@ client.once('ready', () => {
                     await thread.send(message.content);
                 } else if (channel !== undefined) {
                     await channel.send(message.content);
-                }
+                } 
             }
         } catch (error) {
             await message.channel.send('Hmm, weird, it appears we ran into an error. Please try again in a few minutes. If this error persits, please let us')
@@ -45,7 +50,7 @@ client.once('ready', () => {
         }
     });
 
-    // running commands
+    // detected command interactions
     client.on('interactionCreate', async interaction => {
         if (!interaction.isCommand()) return;
 
