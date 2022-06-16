@@ -4,6 +4,10 @@ module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('reply')
 		.setDescription('Reply to a threat')
+        .addStringOption(option => 
+            option.setName('message')
+                .setDescription('The message you want to sent to the user')
+                .setRequired(true))
 		.addBooleanOption(option => 
 			option.setName('this')
 				.setDescription('Choose if you want to reply to this threat')
@@ -18,15 +22,17 @@ module.exports = {
 
 		const this_channel = interaction.options.getBoolean('this');
 		const thread = interaction.options.getChannel('thread');
+        const message = interaction.options.getString('message');
 		
 		if (this_channel) {	
 			if (thread === null) {
-				interaction.channel.messages.fetchPinned().then(id => console.log(id));
+				await interaction.reply(message);
 			} else {
 				await interaction.reply({ content: `You cannot select a channel while having \`this\` selected as \`${this_channel}\``, ephemeral: true });
 			}
 		} else {
-			console.log(thread);
+			const thread_message = await thread.send(message);
+            await interaction.reply('Message sent in the requested channel');
 		}
 	},
 };
