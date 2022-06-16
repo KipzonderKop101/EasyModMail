@@ -16,6 +16,17 @@ module.exports = {
 		let guild = client.guilds.cache.get('850778582515056710');
 		let user = interaction.channel.name.replace('-', '#');
 
-		guild.members.fetch(force=true).then(members => console.log(members));
+		const this_channel = interaction.options.getBoolean('this');
+		const thread = interaction.options.getChannel('thread');
+		
+		if (this_channel) {	
+			if (thread === null) {
+				interaction.channel.messages.fetchPinned().then(id => console.log(id));
+			} else {
+				await interaction.reply({ content: `You cannot select a channel while having \`this\` selected as \`${this_channel}\``, ephemeral: true });
+			}
+		} else {
+			console.log(thread);
+		}
 	},
 };
