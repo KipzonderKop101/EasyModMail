@@ -15,11 +15,9 @@ module.exports = {
 				.setRequired(true))
 		.addChannelOption(option => 
 			option.setName('thread')
-				.setDescription('Choose what thread you want to reply to')
+				.setDescription('Choose what thread you want to reply to (if previous option is false)')
 				.setRequired(false)),
 	async execute(interaction, client) {
-		let guild = client.guilds.cache.get('850778582515056710');
-
 		let this_channel = interaction.options.getBoolean('this');
 		let thread = interaction.options.getChannel('thread');
         let message = interaction.options.getString('message');
@@ -41,7 +39,7 @@ module.exports = {
 				
 				client.users.fetch(id.content).then(async user => {
 					await user.send({ embeds: [clientEmbed] }).catch(async error => {
-						await interaction.reply({ content: 'This user is not receiving DM\'s', ephemeral: true})
+						await interaction.reply({ content: 'This user is not receiving DM\'s', ephemeral: true })
 						console.error(error);
 					});
 					await interaction.reply({ embeds: [serverEmbed] });
