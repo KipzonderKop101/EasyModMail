@@ -13,6 +13,9 @@ module.exports = {
 				.setDescription('Choose what thread you want to reply to')
 				.setRequired(false)),
 	async execute(interaction, client) {
-		// WORK IN PROGESS
+		let guild = client.guilds.cache.get('850778582515056710');
+		let user = interaction.channel.name.replace('-', '#');
+
+		guild.members.fetch(force=true).then(members => console.log(members));
 	},
 };
