@@ -15,7 +15,7 @@ module.exports = {
 				.setRequired(true))
 		.addChannelOption(option => 
 			option.setName('thread')
-				.setDescription('Choose what thread you want to reply to (if previous option is false)')
+				.setDescription('Choose if you want to reply to another thread (if previous option is false)')
 				.setRequired(false)),
 	async execute(interaction, client) {
 		let this_channel = interaction.options.getBoolean('this');
@@ -38,11 +38,13 @@ module.exports = {
 				let id = messages.first();
 				
 				client.users.fetch(id.content).then(async user => {
-					await user.send({ embeds: [clientEmbed] }).catch(async error => {
-						await interaction.reply({ content: 'This user is not receiving DM\'s', ephemeral: true })
-						console.error(error);
-					});
-					await interaction.reply({ embeds: [serverEmbed] });
+					try {
+						await user.send({ embeds: [clientEmbed] });
+						await interaction.reply({ embeds: [serverEmbed] });	
+					} catch (error) {
+						await interaction.reply({ content: 'We ran into an unknown error. Please try again in a few minutes, or contact the help desk!', ephemeral: true});
+                        console.error(error);
+					}
 				}).catch(async error => {
 					await interaction.reply({ content: 'We couldn\'t find the user ID pinned message', ephemeral: true });
 					console.error(error);
@@ -55,14 +57,16 @@ module.exports = {
 			let id = messages.first();
 
 			client.users.fetch(id.content).then(async user => {
-				await user.send({ embeds: [clientEmbed] }).catch(async error => {
-					await interaction.reply({ content: 'This user is not receiving DM\'s', ephemeral: true });
-					console.error(error);
-				});
-				await thread.send({ embeds: [serverEmbed] });
+				try {
+					await user.send({ embeds: [clientEmbed] });
+					await thread.send({ embeds: [serverEmbed] });
+				} catch (error) {
+					await interaction.reply({ content: 'We ran into an unknown error. Please try again in a few minutes, or contact the help desk!', ephemeral: true});
+					console.error(error);	
+				}	
 			}).catch(async error => {
 				await interaction.reply({ content: 'We couldn\'t find the user ID pinned message', ephemeral: true });
-				console.log(error);
+				console.error(error);
 			});
 		}
 	},
