@@ -27,7 +27,7 @@ module.exports = {
             .setTitle('Thread')
             .setDescription('Useful commands for your threads')
             .addFields(
-                { name: '`/delete [thread] (optional reason)`', value: 'Delete a thread', inline: false },
+                { name: '`/delete [this] (optional thread) (optional reason)`', value: 'Delete a thread', inline: false },
                 { name: '`/block [thread] (optional reason)`', value: 'Block a user from contacting mod-mail again', inline: false },
                 { name: '`/archive [thread] (optional reason)`', value: 'Archive a thread', inline: false },
                 { name: '`/transfer [thread] (optional reason)`', value: 'Transfer the thread to a different category', inline: false },
@@ -39,9 +39,9 @@ module.exports = {
             .setTitle('Reply')
             .setDescription('The different ways to reply to a threat')
             .addFields(
-                { name: '`/reply [thread] [message]`', value: 'Reply to a thread', inline: false },
-                { name: '`/areply [thread] [message]`', value: 'Reply to a thread anonymously', inline: false },
-                { name: '`/snippets [thread] [snippet]`', value: 'Transfer the thread to a different category', inline: false },
+                { name: '`/reply [message] [this] (optional thread)`', value: 'Reply to a thread', inline: false },
+                { name: '`/areply [message] [this] (optional thread)`', value: 'Reply to a thread anonymously', inline: false },
+                { name: '`/snippets [snippet] [this] (optional thread)`', value: 'Transfer the thread to a different category', inline: false },
             )
 
         const userHelpEmbed = new MessageEmbed()
