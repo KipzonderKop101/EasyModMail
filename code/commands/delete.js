@@ -1,4 +1,6 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
+const { InteractionResponseType } = require('discord-api-types/v10');
+const { Interaction } = require('discord.js');
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -10,7 +12,7 @@ module.exports = {
                 .setRequired(true))
         .addChannelOption(option => 
             option.setName('thread')
-                .setDescription('Choose the thread you want to delete (if previous option is false)')
+                .setDescription('Choose if you want to delete another thread (if previous option is false)')
                 .setRequired(false))
         .addIntegerOption(option => 
             option.setName('reason')
@@ -19,27 +21,44 @@ module.exports = {
 	async execute(interaction, client) {
 		let this_channel = interaction.options.getBoolean('this');
         let thread = interaction.options.getChannel('thread');
-        let message = interaction.options.getString('message');
+        let reason = interaction.options.getString('reason');
 
         if (this_channel) {
             if (thread === null) {
                 let messages = await interaction.channel.messages.fetchPinned();
-                let id = messages.first()
+                let id = messages.first();
 
                 client.users.fetch(id.content).then(async user => {
-                    // WORK IN PROGESS
+                    try {
+                        await interaction.channel.delete();
+                        await user.send('Your mod-mail thread has been deleted');
+                    } catch (error) {
+                        await interaction.reply({ content: 'We ran into an unknown error. Please try again in a few minutes, or contact the help desk!', ephemeral: true});
+                        console.error(error);
+                    }   
                 }).catch(async error => {
-                    await interaction.reply({ content: 'We couldn\'t the user ID pinned message', emphermal: true });
-                    console.log()
+                    await interaction.reply({ content: 'Hmm, we could not fetch the user ID. Are you sure its pinned?', ephemeral: true });
+                    console.error(error);
                 });
             } else {
-                await interaction.reply({ content: `You cannot select a channel while having \`this\` selected as \`${this_channel}\``, emphermal: true })
+                await interaction.reply({ content: `You cannot select a channel while having \`this\` selected as \`${this_channel}\``, ephemeral: true })
             }
         } else {
             let messages = await thread.messages.fetchPinned();
-            let id = messages.first()
+            let id = messages.first();
 
-            // WORK IN PROGESS
+            client.user.fetch(id.content).then(async user => {
+                try {
+                    await thread.delete();
+                    await user.send('Your mod-mail thread has been deleted');
+                } catch (error) {
+                    await interaction.reply({ content: 'We ran into an unknown error. Please try again in a few minutes, or contact the help desk!', ephemeral: true});
+                    console.error(error);    
+                }
+            }).catch(async error => {   
+                await Interaction.reply({ content: 'Hmm, we could not fetch the user ID. Are you sure its pinned?', ephemeral: true });
+                console.error(error);
+            });
         }
 	},
 };
